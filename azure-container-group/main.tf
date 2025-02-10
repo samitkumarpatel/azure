@@ -16,7 +16,7 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "example" {
-  name     = "example-resources"
+  name     = "example-resources00"
   location = "West Europe"
 }
 
@@ -44,8 +44,8 @@ resource "azurerm_container_group" "example" {
   os_type = "Linux"
 
   container {
-    name   = "hello-world"
-    image  = "mcr.microsoft.com/azuredocs/aci-helloworld"
+    name   = "hello-cloud"
+    image  = "ghcr.io/samitkumarpatel/hello-cloud-fe:main"
     cpu    = "0.5"
     memory = "1.5"
 
@@ -55,12 +55,12 @@ resource "azurerm_container_group" "example" {
     }
   }
 
-  #   container {
-  #     name   = "sidecar"
-  #     image  = "mcr.microsoft.com/azuredocs/aci-tutorial-sidecar"
-  #     cpu    = "0.5"
-  #     memory = "1.5"
-  #   }
+    container {
+      name   = "sidecar"
+      image  = "mcr.microsoft.com/azuredocs/aci-tutorial-sidecar"
+      cpu    = "0.5"
+      memory = "1.5"
+    }
 
   diagnostics {
     log_analytics {
