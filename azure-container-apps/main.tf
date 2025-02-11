@@ -29,7 +29,7 @@ resource "azurerm_log_analytics_workspace" "example" {
 }
 
 resource "azurerm_container_app_environment" "example" {
-  name                       = "Example-Environment"
+  name                       = "example-env"
   location                   = azurerm_resource_group.example.location
   resource_group_name        = azurerm_resource_group.example.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.example.id
@@ -119,7 +119,7 @@ resource "azurerm_container_app" "mongodb_express" {
         memory = "0.5Gi"
         env {
             name  = "ME_CONFIG_MONGODB_URL"
-            value = "mongodb://root:example@${azurerm_container_app.mongodb.ingress[0].fqdn}:27017/"
+            value = "mongodb://root:example@mongodb-app:27017/"
         }
         env {
             name  = "ME_CONFIG_BASICAUTH"
