@@ -4,16 +4,35 @@ resource "azurerm_container_app" "example" {
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
 
-  secret {
-    name  = "registry-credentials-id"
-    value = var.registry_password
+  
+
+  dynamic "registry" {
+    for_each = var.registry_password != null ? [1] : []
+    
+    content {
+      server = registry.value.server
+      username = registry.value.username
+      password_secret_name = registry.value.password_secret_name
+    }  
   }
 
-  registry {
-    server = "ghcr.io"
-    username = "samitkumarpatel"
-    password_secret_name = "registry-credentials-id"
+  dynamic "secret" {
+    for_each = var.registry_password != null ? [1] : []
+    content {
+      name  = "registry-credentials-id"
+      value = var.registry_password
+    }
   }
+  
+  dynamic "registry" {
+    for_each = var.registry_password != null ? [1] : []
+    content {
+      server = "ghcr.io"
+      username = "samitkumarpatel"
+      password_secret_name = "registry-credentials-id"
+    }
+  }
+  
   
   template {
     container {
@@ -23,7 +42,7 @@ resource "azurerm_container_app" "example" {
       memory = var.container.memory
       
       dynamic "env" {
-        for_each = var.container.env
+        for_each = [for key, value in var.container.env : { name = key, value = value }]
         content {
           name  = env.value.name
           value = env.value.value

@@ -12,8 +12,10 @@ variable "name" {
   description = "The name of the container instance."
 }
 
+
 variable "registry_password" {
   description = "The password for the container registry."
+  default = null
 }
 
 variable "container" {
@@ -23,10 +25,7 @@ variable "container" {
     image  = string
     cpu    = optional(number, 0.25)
     memory = optional(string,"0.5Gi")
-    env = map(object({
-      name = string
-      value = string
-    }))
+    env = map(string)
   })
 }
 
@@ -37,7 +36,7 @@ variable "ingress" {
     external_enabled = bool
     target_port = number
     exposed_port = optional(number, null)
-    transport = choice(["auto", "tcp", "http"])
+    transport = string
   })
   
 }

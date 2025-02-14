@@ -15,5 +15,6 @@ variable "name" {
 
 variable "log_analytics_workspace_id" {
     description = "The ID of the Log Analytics workspace."
-  
+    type = string
+    default = null
 }
