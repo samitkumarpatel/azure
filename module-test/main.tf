@@ -21,10 +21,10 @@ resource "azurerm_resource_group" "test" {
 }
 
 module "apps_env" {
-  source                     = "../modules/container-apps-env"
-  resource_group_name        = azurerm_resource_group.test.name
-  location                   = azurerm_resource_group.test.location
-  name                       = "test-apps-env"
+  source              = "../modules/container-apps-env"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+  name                = "test-apps-env"
 }
 
 output "apps_env" {
@@ -37,8 +37,8 @@ module "container_apps" {
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                       = "nginx-app"
   container = {
-    name   = "nginx-container"
-    image  = "nginx"
+    name  = "nginx-container"
+    image = "nginx"
     env = {
       ENV_ONE = "One"
       ENV_TWO = "Two"
@@ -50,5 +50,5 @@ module "container_apps" {
     target_port                = 80
     transport                  = "http"
   }
-  
+
 }
