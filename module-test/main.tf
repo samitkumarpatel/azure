@@ -32,10 +32,10 @@ output "apps_env" {
 }
 
 module "container_apps" {
-  source                     = "../modules/container-apps"
-  resource_group_name        = azurerm_resource_group.test.name
+  source                       = "../modules/container-apps"
+  resource_group_name          = azurerm_resource_group.test.name
   container_app_environment_id = module.apps_env.container_app_environment_id
-  name                       = "nginx-app"
+  name                         = "nginx-app"
   container = {
     name  = "nginx-container"
     image = "nginx"
