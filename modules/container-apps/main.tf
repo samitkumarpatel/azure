@@ -4,18 +4,6 @@ resource "azurerm_container_app" "example" {
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
 
-  
-
-  dynamic "registry" {
-    for_each = var.registry_password != null ? [1] : []
-    
-    content {
-      server = registry.value.server
-      username = registry.value.username
-      password_secret_name = registry.value.password_secret_name
-    }  
-  }
-
   dynamic "secret" {
     for_each = var.registry_password != null ? [1] : []
     content {
@@ -35,6 +23,8 @@ resource "azurerm_container_app" "example" {
   
   
   template {
+    min_replicas = 1
+    max_replicas = 2
     container {
       name   = var.container.name
       image  = var.container.image
