@@ -95,3 +95,57 @@ module "container_apps_person" {
 output "person_api_url" {
   value = module.container_apps_person.fqdn
 }
+
+module "container_apps_postgres_todo" {
+  source                       = "../modules/container-apps"
+  resource_group_name          = azurerm_resource_group.test.name
+  container_app_environment_id = module.apps_env.container_app_environment_id
+  name                         = "postgres-todo"
+  container = {
+    name  = "postgres"
+    image = "postgres"
+    env = {
+      POSTGRES_USER     = "root"
+      POSTGRES_PASSWORD = "example"
+      POSTGRES_DB       = "todo"
+    }
+  }
+  ingress = {
+    allow_insecure_connections = null
+    external_enabled           = false
+    target_port                = 5432
+    exposed_port               = 5432
+    transport                  = "tcp"
+  }
+
+}
+
+module "container_apps_todo" {
+  source                       = "../modules/container-apps"
+  resource_group_name          = azurerm_resource_group.test.name
+  container_app_environment_id = module.apps_env.container_app_environment_id
+  name                         = "todo-app"
+  registry_password            = var.registry_password
+  container = {
+    name  = "todo"
+    image = "ghcr.io/fullstack1o1/todo:main"
+    env = {
+      "spring.datasource.url"      = "jdbc:postgresql://postgres-todo:5432/todo"
+      "spring.datasource.username" = "root"
+      "spring.datasource.password" = "example"
+      "spring.flyway.enabled"      = true
+    }
+  }
+  ingress = {
+    allow_insecure_connections = true
+    external_enabled           = true
+    target_port                = 8080
+    transport                  = "http"
+  }
+
+}
+
+
+output "todo_api_url" {
+  value = module.container_apps_todo.fqdn
+}
