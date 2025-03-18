@@ -25,6 +25,7 @@ module "apps_env" {
   resource_group_name = azurerm_resource_group.test.name
   location            = azurerm_resource_group.test.location
   name                = "test-apps-env"
+  storage_share_name  = "test-share"
 }
 
 output "apps_env" {
