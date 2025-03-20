@@ -18,3 +18,10 @@ variable "log_analytics_workspace_id" {
     type = string
     default = null
 }
+
+variable "storage_share_name" {
+    description = "The name of the storage share."
+    type = string
+    default = "share"
+  
+}
