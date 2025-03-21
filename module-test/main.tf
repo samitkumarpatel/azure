@@ -20,12 +20,20 @@ resource "azurerm_resource_group" "test" {
   location = "West Europe"
 }
 
+locals {
+  storage = {
+    account_name                = "azstrogeu001"
+    account_resource_group_name = "personal"
+    share_name                  = ["cache", "logs"]
+  }
+}
+
 module "apps_env" {
   source              = "../modules/container-apps-env"
   resource_group_name = azurerm_resource_group.test.name
   location            = azurerm_resource_group.test.location
   name                = "test-apps-env"
-  storage_share_name  = "test-share"
+  storage             = local.storage
 }
 
 output "apps_env" {
@@ -33,15 +41,19 @@ output "apps_env" {
 }
 
 module "container_apps" {
-  depends_on                   = [module.apps_env]
+  depends_on = [
+    module.apps_env
+  ]
   source                       = "../modules/container-apps"
   resource_group_name          = azurerm_resource_group.test.name
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "nginx-app"
-  environment_storage_name     = module.apps_env.environment_storage_name
+  environment_storage_name     = module.apps_env.environment_storage_name[0]
+
   volumes = [
     "cache-volume", "logs-volume"
   ]
+
   container = {
     name  = "nginx-container"
     image = "nginx"
@@ -50,9 +62,11 @@ module "container_apps" {
       ENV_TWO = "Two"
     }
     volume = {
+      #volume_name = "mount-path"
       cache-volume = "/var/cache/nginx"
     }
   }
+
   ingress = {
     allow_insecure_connections = true
     external_enabled           = true
