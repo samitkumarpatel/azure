@@ -3,6 +3,6 @@ output "container_app_environment_id" {
 }
 
 output "environment_storage_name" {
-    value = azurerm_container_app_environment_storage.example.name
+    value = [for s in azurerm_container_app_environment_storage.example : s.name]
 }
 
