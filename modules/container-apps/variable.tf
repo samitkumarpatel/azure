@@ -42,7 +42,7 @@ variable "ingress" {
 
 }
 
-variable "environment_storage_name" {
+variable "app_env_storage_name" {
   description = "The name of the Azure file share to mount."
 
 }

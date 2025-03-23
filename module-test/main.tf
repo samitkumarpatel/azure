@@ -48,7 +48,7 @@ module "container_apps" {
   resource_group_name          = azurerm_resource_group.test.name
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "nginx-app"
-  environment_storage_name     = module.apps_env.environment_storage_name[0]
+  app_env_storage_name         = module.apps_env.storage_names[0]
 
   volumes = [
     "cache-volume", "logs-volume"

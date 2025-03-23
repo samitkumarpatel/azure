@@ -30,7 +30,7 @@ resource "azurerm_container_app" "example" {
       for_each = var.volumes
       content {
         name          = volume.value
-        storage_name  = var.environment_storage_name
+        storage_name  = var.app_env_storage_name
         storage_type  = "AzureFile"
         mount_options = "dir_mode=0751,file_mode=0751"
       }
