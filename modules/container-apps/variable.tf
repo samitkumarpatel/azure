@@ -44,11 +44,12 @@ variable "ingress" {
 
 variable "app_env_storage_name" {
   description = "The name of the Azure file share to mount."
-
+  default = null
 }
 
 variable "volumes" {
   description = "The volumes to mount in the container instance."
   type = list(string)
+  default = []
   
 }

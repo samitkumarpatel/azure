@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>4.0"
+      version = "4.23.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -28,11 +28,20 @@ resource "azurerm_resource_group" "test" {
   location = "West Europe"
 }
 
+locals {
+  storage = {
+    account_name                = "azstrogeu001"
+    account_resource_group_name = "personal"
+    share_name                  = ["todo", "person"]
+  }
+}
+
 module "apps_env" {
   source              = "../modules/container-apps-env"
   resource_group_name = azurerm_resource_group.test.name
   location            = azurerm_resource_group.test.location
   name                = "learn-env"
+  storage             = local.storage
 }
 
 output "apps_env" {
@@ -41,10 +50,15 @@ output "apps_env" {
 
 
 module "container_apps_postgres" {
+  depends_on = [module.apps_env]
+
   source                       = "../modules/container-apps"
   resource_group_name          = azurerm_resource_group.test.name
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "postgres-app"
+  app_env_storage_name         = "person-storage"
+  volumes                      = ["person-volume"]
+
   container = {
     name  = "postgres"
     image = "postgres"
@@ -52,6 +66,10 @@ module "container_apps_postgres" {
       POSTGRES_USER     = "root"
       POSTGRES_PASSWORD = "example"
       POSTGRES_DB       = "person"
+    }
+    volume = {
+      #volume_name = "mount-path"
+      person-volume = "/var/lib/postgresql/data/pgdata"
     }
   }
   ingress = {
@@ -81,6 +99,7 @@ module "container_apps_person" {
       "spring.datasource.password" = "example"
       "spring.flyway.enabled"      = true
     }
+    volume = {}
   }
   ingress = {
     allow_insecure_connections = true
@@ -101,6 +120,10 @@ module "container_apps_postgres_todo" {
   resource_group_name          = azurerm_resource_group.test.name
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "postgres-todo"
+
+  app_env_storage_name = "todo-storage"
+  volumes              = ["todo-volume"]
+
   container = {
     name  = "postgres"
     image = "postgres"
@@ -108,6 +131,10 @@ module "container_apps_postgres_todo" {
       POSTGRES_USER     = "root"
       POSTGRES_PASSWORD = "example"
       POSTGRES_DB       = "todo"
+    }
+    volume = {
+      #volume_name = "mount-path"
+      todo-volume = "/var/lib/postgresql/data/pgdata"
     }
   }
   ingress = {
@@ -126,6 +153,7 @@ module "container_apps_todo" {
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "todo-app"
   registry_password            = var.registry_password
+
   container = {
     name  = "todo"
     image = "ghcr.io/fullstack1o1/todo:main"
@@ -135,6 +163,7 @@ module "container_apps_todo" {
       "spring.datasource.password" = "example"
       "spring.flyway.enabled"      = true
     }
+    volume = {}
   }
   ingress = {
     allow_insecure_connections = true
