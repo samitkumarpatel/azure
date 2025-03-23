@@ -18,3 +18,12 @@ variable "log_analytics_workspace_id" {
     type = string
     default = null
 }
+
+variable "storage" {
+    description = "The storage configuration for the container apps."
+    type = object({
+        account_name = string
+        account_resource_group_name = string
+        share_name = list(string)
+    })
+}
