@@ -53,3 +53,16 @@ variable "volumes" {
   default = []
   
 }
+
+variable "replicas" {
+  description = "The number of replicas to create for the container instance."
+  type = object({
+    min = number
+    max = number
+  })
+  
+  default = {
+    min = 0
+    max = 1
+  }
+}

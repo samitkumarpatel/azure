@@ -23,8 +23,8 @@ resource "azurerm_container_app" "example" {
 
 
   template {
-    min_replicas = 0
-    max_replicas = 1
+    min_replicas = var.replicas.min
+    max_replicas = var.replicas.max
 
     dynamic "volume" {
       for_each = var.volumes
@@ -32,9 +32,9 @@ resource "azurerm_container_app" "example" {
         name          = volume.value
         storage_name  = var.app_env_storage_name
         storage_type  = "AzureFile"
-        mount_options = "dir_mode=0751,file_mode=0751"
+        mount_options = "dir_mode=0777,file_mode=0777"
       }
-      
+
     }
 
     container {
@@ -56,12 +56,12 @@ resource "azurerm_container_app" "example" {
         content {
           name = volume_mounts.value.name
           path = volume_mounts.value.path
-        
+
         }
       }
     }
   }
-  
+
   ingress {
     allow_insecure_connections = var.ingress.allow_insecure_connections
     external_enabled           = var.ingress.external_enabled

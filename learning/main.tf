@@ -32,7 +32,7 @@ locals {
   storage = {
     account_name                = "azstrogeu001"
     account_resource_group_name = "personal"
-    share_name                  = ["todo", "person"]
+    share_name                  = []
   }
 }
 
@@ -56,8 +56,9 @@ module "container_apps_postgres" {
   resource_group_name          = azurerm_resource_group.test.name
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "postgres-app"
-  app_env_storage_name         = "person-storage"
-  volumes                      = ["person-volume"]
+
+  app_env_storage_name = null
+  volumes              = []
 
   container = {
     name  = "postgres"
@@ -67,10 +68,7 @@ module "container_apps_postgres" {
       POSTGRES_PASSWORD = "example"
       POSTGRES_DB       = "person"
     }
-    volume = {
-      #volume_name = "mount-path"
-      person-volume = "/var/lib/postgresql/data/pgdata"
-    }
+    volume = {}
   }
   ingress = {
     allow_insecure_connections = null
@@ -121,8 +119,13 @@ module "container_apps_postgres_todo" {
   container_app_environment_id = module.apps_env.container_app_environment_id
   name                         = "postgres-todo"
 
-  app_env_storage_name = "todo-storage"
-  volumes              = ["todo-volume"]
+  app_env_storage_name = null
+  volumes              = []
+
+  replicas = {
+    min = 1
+    max = 1
+  }
 
   container = {
     name  = "postgres"
@@ -131,11 +134,9 @@ module "container_apps_postgres_todo" {
       POSTGRES_USER     = "root"
       POSTGRES_PASSWORD = "example"
       POSTGRES_DB       = "todo"
+      PGDATA            = "/var/lib/postgresql/data"
     }
-    volume = {
-      #volume_name = "mount-path"
-      todo-volume = "/var/lib/postgresql/data/pgdata"
-    }
+    volume = {}
   }
   ingress = {
     allow_insecure_connections = null
