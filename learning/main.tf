@@ -36,6 +36,19 @@ locals {
   }
 }
 
+module "postgres" {
+  source              = "../modules/postgres-flex"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+  server_name         = "learn-postgres"
+  database_names      = ["person", "todo"]
+  ip_address          = ["0.0.0.0"]
+}
+
+output "postgres_endpoint" {
+  value = module.postgres.endpoint
+}
+
 module "apps_env" {
   source              = "../modules/container-apps-env"
   resource_group_name = azurerm_resource_group.test.name
@@ -49,36 +62,35 @@ output "apps_env" {
 }
 
 
-module "container_apps_postgres" {
-  depends_on = [module.apps_env]
+# module "container_apps_postgres" {
+#   depends_on = [module.apps_env]
 
-  source                       = "../modules/container-apps"
-  resource_group_name          = azurerm_resource_group.test.name
-  container_app_environment_id = module.apps_env.container_app_environment_id
-  name                         = "postgres-app"
+#   source                       = "../modules/container-apps"
+#   resource_group_name          = azurerm_resource_group.test.name
+#   container_app_environment_id = module.apps_env.container_app_environment_id
+#   name                         = "postgres-app"
 
-  app_env_storage_name = null
-  volumes              = []
+#   app_env_storage_name = null
+#   volumes              = []
 
-  container = {
-    name  = "postgres"
-    image = "postgres"
-    env = {
-      POSTGRES_USER     = "root"
-      POSTGRES_PASSWORD = "example"
-      POSTGRES_DB       = "person"
-    }
-    volume = {}
-  }
-  ingress = {
-    allow_insecure_connections = null
-    external_enabled           = false
-    target_port                = 5432
-    exposed_port               = 5432
-    transport                  = "tcp"
-  }
-
-}
+#   container = {
+#     name  = "postgres"
+#     image = "postgres"
+#     env = {
+#       POSTGRES_USER     = "root"
+#       POSTGRES_PASSWORD = "example"
+#       POSTGRES_DB       = "person"
+#     }
+#     volume = {}
+#   }
+#   ingress = {
+#     allow_insecure_connections = null
+#     external_enabled           = false
+#     target_port                = 5432
+#     exposed_port               = 5432
+#     transport                  = "tcp"
+#   }
+# }
 
 variable "registry_password" {}
 
@@ -92,9 +104,9 @@ module "container_apps_person" {
     name  = "peron"
     image = "ghcr.io/fullstack1o1/person:210220252208"
     env = {
-      "spring.datasource.url"      = "jdbc:postgresql://postgres-app:5432/person"
-      "spring.datasource.username" = "root"
-      "spring.datasource.password" = "example"
+      "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/person"
+      "spring.datasource.username" = "psqladmin"
+      "spring.datasource.password" = module.postgres.password
       "spring.flyway.enabled"      = true
     }
     volume = {}
@@ -113,41 +125,6 @@ output "person_api_url" {
   value = module.container_apps_person.fqdn
 }
 
-module "container_apps_postgres_todo" {
-  source                       = "../modules/container-apps"
-  resource_group_name          = azurerm_resource_group.test.name
-  container_app_environment_id = module.apps_env.container_app_environment_id
-  name                         = "postgres-todo"
-
-  app_env_storage_name = null
-  volumes              = []
-
-  replicas = {
-    min = 1
-    max = 1
-  }
-
-  container = {
-    name  = "postgres"
-    image = "postgres"
-    env = {
-      POSTGRES_USER     = "root"
-      POSTGRES_PASSWORD = "example"
-      POSTGRES_DB       = "todo"
-      PGDATA            = "/var/lib/postgresql/data"
-    }
-    volume = {}
-  }
-  ingress = {
-    allow_insecure_connections = null
-    external_enabled           = false
-    target_port                = 5432
-    exposed_port               = 5432
-    transport                  = "tcp"
-  }
-
-}
-
 module "container_apps_todo" {
   source                       = "../modules/container-apps"
   resource_group_name          = azurerm_resource_group.test.name
@@ -159,9 +136,9 @@ module "container_apps_todo" {
     name  = "todo"
     image = "ghcr.io/fullstack1o1/todo:main"
     env = {
-      "spring.datasource.url"      = "jdbc:postgresql://postgres-todo:5432/todo"
-      "spring.datasource.username" = "root"
-      "spring.datasource.password" = "example"
+      "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/todo"
+      "spring.datasource.username" = "psqladmin"
+      "spring.datasource.password" = module.postgres.password
       "spring.flyway.enabled"      = true
     }
     volume = {}
