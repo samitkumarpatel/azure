@@ -134,7 +134,7 @@ module "container_apps_todo" {
 
   container = {
     name  = "todo"
-    image = "ghcr.io/fullstack1o1/todo:main"
+    image = "ghcr.io/fullstack1o1/todo:110520252133"
     env = {
       "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/todo"
       "spring.datasource.username" = "psqladmin"
