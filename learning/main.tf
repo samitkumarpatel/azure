@@ -42,7 +42,6 @@ module "postgres" {
   location            = azurerm_resource_group.test.location
   server_name         = "learn-postgres"
   database_names      = ["person", "todo"]
-  ip_address          = ["0.0.0.0"]
 }
 
 output "postgres_endpoint" {
@@ -120,7 +119,6 @@ module "container_apps_person" {
 
 }
 
-
 output "person_api_url" {
   value = module.container_apps_person.fqdn
 }
@@ -149,10 +147,26 @@ module "container_apps_todo" {
     target_port                = 8080
     transport                  = "http"
   }
-
 }
 
 
 output "todo_api_url" {
   value = module.container_apps_todo.fqdn
+}
+
+resource "azurerm_postgresql_flexible_server_firewall_rule" "example" {
+  depends_on = [
+    module.postgres,
+    module.container_apps_todo,
+    module.container_apps_person,
+  ]
+
+  for_each = toset(flatten([
+    module.container_apps_todo.egress_ip,
+    module.container_apps_person.egress_ip
+  ]))
+  name             = "container-app-fw-rule-${replace(each.key, ".", "-")}"
+  server_id        = module.postgres.id
+  start_ip_address = each.value
+  end_ip_address   = each.value
 }

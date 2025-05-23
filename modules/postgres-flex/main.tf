@@ -20,17 +20,6 @@ resource "azurerm_postgresql_flexible_server" "example" {
   sku_name = "B_Standard_B1ms"
 }
 
-
-resource "azurerm_postgresql_flexible_server_firewall_rule" "example" {
-  count            = length(var.ip_address)
-  name             = "example-fw-${count.index}"
-  server_id        = azurerm_postgresql_flexible_server.example.id
-  start_ip_address = var.ip_address[count.index]
-  end_ip_address   = var.ip_address[count.index]
-
-  depends_on       = [ azurerm_postgresql_flexible_server.example ]
-}
-
 resource "azurerm_postgresql_flexible_server_database" "example" {
   count               = length(var.database_names)
 

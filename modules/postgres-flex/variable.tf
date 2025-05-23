@@ -17,8 +17,3 @@ variable "database_names" {
     type        = list(string)
     default     = []
 }
-
-variable "ip_address" {
-    description = "The IP address range to allow access to the PostgreSQL Flexible Server."
-    type        = list(string)
-}
