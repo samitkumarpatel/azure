@@ -41,7 +41,7 @@ module "postgres" {
   resource_group_name = azurerm_resource_group.test.name
   location            = azurerm_resource_group.test.location
   server_name         = "learn-postgres"
-  database_names      = ["person", "todo"]
+  database_names      = ["person", "todo", "employee"]
 }
 
 output "postgres_endpoint" {
@@ -93,35 +93,35 @@ output "apps_env" {
 
 variable "registry_password" {}
 
-module "container_apps_person" {
-  source                       = "../modules/container-apps"
-  resource_group_name          = azurerm_resource_group.test.name
-  container_app_environment_id = module.apps_env.container_app_environment_id
-  name                         = "person-app"
-  registry_password            = var.registry_password
-  container = {
-    name  = "peron"
-    image = "ghcr.io/fullstack1o1/person:170520252048"
-    env = {
-      "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/person"
-      "spring.datasource.username" = "psqladmin"
-      "spring.datasource.password" = module.postgres.password
-      "spring.flyway.enabled"      = true
-    }
-    volume = {}
-  }
-  ingress = {
-    allow_insecure_connections = true
-    external_enabled           = true
-    target_port                = 8080
-    transport                  = "http"
-  }
+# module "container_apps_person" {
+#   source                       = "../modules/container-apps"
+#   resource_group_name          = azurerm_resource_group.test.name
+#   container_app_environment_id = module.apps_env.container_app_environment_id
+#   name                         = "person-app"
+#   registry_password            = var.registry_password
+#   container = {
+#     name  = "peron"
+#     image = "ghcr.io/fullstack1o1/person:170520252048"
+#     env = {
+#       "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/person"
+#       "spring.datasource.username" = "psqladmin"
+#       "spring.datasource.password" = module.postgres.password
+#       "spring.flyway.enabled"      = true
+#     }
+#     volume = {}
+#   }
+#   ingress = {
+#     allow_insecure_connections = true
+#     external_enabled           = true
+#     target_port                = 8080
+#     transport                  = "http"
+#   }
 
-}
+# }
 
-output "person_api_url" {
-  value = module.container_apps_person.fqdn
-}
+# output "person_api_url" {
+#   value = module.container_apps_person.fqdn
+# }
 
 module "container_apps_todo" {
   source                       = "../modules/container-apps"
@@ -154,17 +154,49 @@ output "todo_api_url" {
   value = module.container_apps_todo.fqdn
 }
 
+module "container_apps_employee" {
+  source                       = "../modules/container-apps"
+  resource_group_name          = azurerm_resource_group.test.name
+  container_app_environment_id = module.apps_env.container_app_environment_id
+  name                         = "employee-app"
+  registry_password            = var.registry_password
+  container = {
+    name  = "employee"
+    image = "ghcr.io/fullstack1o1/employee:270520252133"
+    env = {
+      "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/employee"
+      "spring.datasource.username" = "psqladmin"
+      "spring.datasource.password" = module.postgres.password
+      "spring.flyway.enabled"      = true
+    }
+    volume = {}
+  }
+  ingress = {
+    allow_insecure_connections = true
+    external_enabled           = true
+    target_port                = 8080
+    transport                  = "http"
+  }
+
+}
+
+output "employee_api_url" {
+  value = module.container_apps_employee.fqdn
+}
+
+
 resource "azurerm_postgresql_flexible_server_firewall_rule" "example" {
   depends_on = [
     module.postgres,
     module.container_apps_todo,
-    module.container_apps_person,
+    module.container_apps_employee
   ]
 
-  for_each = toset(flatten([
-    module.container_apps_todo.egress_ip,
-    module.container_apps_person.egress_ip
-  ]))
+  for_each = {
+    todo    = module.container_apps_todo.egress_ip[0]
+    employee = module.container_apps_employee.egress_ip[0]
+  }
+  
   name             = "container-app-fw-rule-${replace(each.key, ".", "-")}"
   server_id        = module.postgres.id
   start_ip_address = each.value
