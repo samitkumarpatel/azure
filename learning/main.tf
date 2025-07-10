@@ -36,6 +36,7 @@ locals {
   }
 }
 
+#postgres
 module "postgres" {
   source              = "../modules/postgres-flex"
   resource_group_name = azurerm_resource_group.test.name
@@ -46,6 +47,23 @@ module "postgres" {
 
 output "postgres_endpoint" {
   value = module.postgres.endpoint
+}
+
+#mssql
+module "mssql" {
+  source              = "../modules/mssql"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+  server_name         = "learn-mssql01"
+  database_names      = ["employee"]
+}
+
+output "mssql_endpoint" {
+  value = module.mssql.fully_qualified_domain_name
+}
+
+output "mssql_username" {
+  value = module.mssql.username
 }
 
 module "apps_env" {
@@ -193,12 +211,27 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "example" {
   ]
 
   for_each = {
-    todo    = module.container_apps_todo.egress_ip[0]
+    todo     = module.container_apps_todo.egress_ip[0]
     employee = module.container_apps_employee.egress_ip[0]
   }
-  
+
   name             = "container-app-fw-rule-${replace(each.key, ".", "-")}"
   server_id        = module.postgres.id
+  start_ip_address = each.value
+  end_ip_address   = each.value
+}
+
+resource "azurerm_mssql_firewall_rule" "example" {
+  depends_on = [
+    module.mssql,
+    module.container_apps_employee
+  ]
+  for_each = {
+    employee = module.container_apps_employee.egress_ip[0]
+  }
+
+  name             = "container-app-fw-rule-${replace(each.key, ".", "-")}"
+  server_id        = module.mssql.server_id
   start_ip_address = each.value
   end_ip_address   = each.value
 }
