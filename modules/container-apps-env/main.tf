@@ -21,7 +21,7 @@ resource "azurerm_storage_share" "example" {
 resource "azurerm_container_app_environment_storage" "example" {
   for_each = toset(var.storage.share_name)
 
-  name                         = "${each.value}-storage"
+  name                         = "${each.value}-azfile"
   container_app_environment_id = azurerm_container_app_environment.example.id
   account_name                 = data.azurerm_storage_account.example.name
   share_name                   = each.value

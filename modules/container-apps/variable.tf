@@ -43,7 +43,7 @@ variable "ingress" {
 }
 
 variable "app_env_storage_name" {
-  description = "The name of the Azure file share to mount."
+  description = "The name of the container app Azure file name."
   default = null
 }
 

@@ -27,12 +27,13 @@ resource "azurerm_container_app" "example" {
     max_replicas = var.replicas.max
 
     dynamic "volume" {
-      for_each = var.volumes
+      for_each = toset(var.volumes)
+      
       content {
-        name          = volume.value
+        name          = "${volume.value}-volume"
         storage_name  = var.app_env_storage_name
         storage_type  = "AzureFile"
-        mount_options = "dir_mode=0777,file_mode=0777"
+        mount_options = "rw"
       }
 
     }
