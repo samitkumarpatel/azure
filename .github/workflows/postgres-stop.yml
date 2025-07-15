@@ -1,9 +1,9 @@
-name: postgres-start
+name: postgres-stop
 
 on:
   workflow_dispatch:
   schedule:
-  - cron:  '0 10 * * *'
+  - cron:  '30 23 * * *'
 
 jobs:
   start:
@@ -24,4 +24,4 @@ jobs:
     
     - name: start postgres flex
       run: |
-        az postgres flexible-server start --resource-group learn-resources01 --name learn-postgres
+        az postgres flexible-server stop --resource-group learn-resources01 --name learn-postgres
