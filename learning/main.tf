@@ -214,7 +214,7 @@ module "container_apps_employee" {
   registry_password            = var.registry_password
   container = {
     name  = "employee"
-    image = "ghcr.io/fullstack1o1/employee:270520252133"
+    image = "ghcr.io/fullstack1o1/employee:110820251001"
     env = {
       "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/employee"
       "spring.datasource.username" = "psqladmin"
