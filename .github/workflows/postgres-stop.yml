@@ -22,6 +22,6 @@ jobs:
         inlineScript: |
           az account show
     
-    - name: start postgres flex
+    - name: stop postgres flex
       run: |
         az postgres flexible-server stop --resource-group learn-resources01 --name learn-postgres
