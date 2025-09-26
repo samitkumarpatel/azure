@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.23.0"
+      version = "4.46.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -116,14 +116,14 @@ output "apps_env" {
 
 #   container = {
 #     name  = "postgres"
-#     image = "postgres:alpine"
+#     image = "postgres:18"
 #     env = {
 #       POSTGRES_USER     = "root"
 #       POSTGRES_PASSWORD = "example"
 #       POSTGRES_DB       = "todo"
 #     }
 #     volume = {
-#       "pgdata-volume" = "/var/lib/postgresql"
+#       "pgdata-volume" = "/var/lib/postgresql/18"
 #     }
 #   }
   
@@ -137,44 +137,42 @@ output "apps_env" {
 # }
 
 
+# module "container_apps_todo" {
+#   source                       = "../modules/container-apps"
+#   resource_group_name          = azurerm_resource_group.test.name
+#   container_app_environment_id = module.apps_env.container_app_environment_id
+#   name                         = "todo-app"
+#   registry_password            = var.registry_password
 
-
-module "container_apps_todo" {
-  source                       = "../modules/container-apps"
-  resource_group_name          = azurerm_resource_group.test.name
-  container_app_environment_id = module.apps_env.container_app_environment_id
-  name                         = "todo-app"
-  registry_password            = var.registry_password
-
-  container = {
-    name  = "todo"
-    image = "ghcr.io/fullstack1o1/todo:110520252133"
-    env = {
-      "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/todo"
-      "spring.datasource.username" = "psqladmin"
-      "spring.datasource.password" = module.postgres.password
+#   container = {
+#     name  = "todo"
+#     image = "ghcr.io/fullstack1o1/todo:110520252133"
+#     env = {
+#       # "spring.datasource.url"      = "jdbc:postgresql://${module.postgres.endpoint}/todo"
+#       # "spring.datasource.username" = "psqladmin"
+#       # "spring.datasource.password" = module.postgres.password
       
-      # "spring.datasource.url"      = "jdbc:postgresql://todo-postgres:5432/todo"
-      # "spring.datasource.username" = "root"
-      # "spring.datasource.password" = "example"
+#       "spring.datasource.url"      = "jdbc:postgresql://todo-postgres:5432/todo"
+#       "spring.datasource.username" = "root"
+#       "spring.datasource.password" = "example"
       
-      "spring.flyway.enabled"      = true
-    }
-    volume = {}
-  }
+#       "spring.flyway.enabled"      = true
+#     }
+#     volume = {}
+#   }
   
-  ingress = {
-    allow_insecure_connections = true
-    external_enabled           = true
-    target_port                = 8080
-    transport                  = "http"
-  }
-}
+#   ingress = {
+#     allow_insecure_connections = true
+#     external_enabled           = true
+#     target_port                = 8080
+#     transport                  = "http"
+#   }
+# }
 
 
-output "todo_api_url" {
-  value = module.container_apps_todo.fqdn
-}
+# output "todo_api_url" {
+#   value = module.container_apps_todo.fqdn
+# }
 
 # module "container_apps_person" {
 #   source                       = "../modules/container-apps"
@@ -240,12 +238,12 @@ output "employee_api_url" {
 resource "azurerm_postgresql_flexible_server_firewall_rule" "example" {
   depends_on = [
     module.postgres,
-    module.container_apps_todo,
+    # module.container_apps_todo,
     module.container_apps_employee
   ]
 
   for_each = {
-    todo     = module.container_apps_todo.egress_ip[0]
+    # todo     = module.container_apps_todo.egress_ip[0]
     employee = module.container_apps_employee.egress_ip[0]
   }
 
